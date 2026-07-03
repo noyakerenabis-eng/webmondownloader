@@ -11,6 +11,7 @@ import jwt
 import pandas as pd
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ============================================================================
 # PAGE CONFIG
@@ -432,32 +433,42 @@ else:
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        for idx, doc in enumerate(filtered_documents):
-            # Update progress
-            progress = (idx + 1) / len(filtered_documents) if len(filtered_documents) > 0 else 0
-            progress_bar.progress(progress)
-            status_text.text(f"⏳ Fetch detail: {idx + 1}/{len(filtered_documents)}")
-            
-            doc_id = doc.get("id", "")
-            links = api.get_all_download_links(doc_id)
-            
-            link_count = len(links)
-            
-            df_data.append({
-                "No": idx + 1,
-                "No. Aju": doc.get("no_aju", "N/A"),
-                "Pemohon": doc.get("nama_pemohon", "N/A")[:40],
-                "Satpel": doc.get("satpel", "N/A")[:25],
-                "Komoditas": doc.get("komoditas", "N/A")[:30],
-                "File PDF": f"📄 {link_count}" if link_count > 0 else "❌ 0"
-            })
-            
-            if links:
-                docs_with_links.append({
-                    "no_aju": doc.get("no_aju"),
-                    "nama_pemohon": doc.get("nama_pemohon"),
-                    "links": links
+        with ThreadPoolExecutor(max_workers=10) as executor:
+
+            futures = {
+                executor.submit(api.get_all_download_links, doc.get("id", "")): doc
+                for doc in filtered_documents
+            }
+        
+            completed = 0
+        
+            for future in as_completed(futures):
+        
+                completed += 1
+        
+                progress_bar.progress(completed / len(filtered_documents))
+                status_text.text(
+                    f"⏳ Fetch detail {completed}/{len(filtered_documents)}"
+                )
+        
+                doc = futures[future]
+                links = future.result()
+        
+                df_data.append({
+                    "No": completed,
+                    "No. Aju": doc.get("no_aju", "N/A"),
+                    "Pemohon": doc.get("nama_pemohon", "N/A")[:40],
+                    "Satpel": doc.get("satpel", "N/A")[:25],
+                    "Komoditas": doc.get("komoditas", "N/A")[:30],
+                    "File PDF": f"📄 {len(links)}" if links else "❌ 0"
                 })
+        
+                if links:
+                    docs_with_links.append({
+                        "no_aju": doc.get("no_aju"),
+                        "nama_pemohon": doc.get("nama_pemohon"),
+                        "links": links
+                    })
         
         progress_bar.empty()
         status_text.empty()
