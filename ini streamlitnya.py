@@ -521,9 +521,7 @@ else:
 
             temp_dir = tempfile.TemporaryDirectory()
             final_download_path = temp_dir.name
-                st.error(f"❌ Gagal membuat folder: {str(e)}")
-                st.stop()
-            
+                           
             progress_bar = st.progress(0)
             status_text = st.empty()
             
