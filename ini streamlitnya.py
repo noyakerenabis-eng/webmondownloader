@@ -492,30 +492,7 @@ else:
                 # Download Section
         st.markdown("---")
         st.subheader("⬇️ Download Sertifikat")
-        
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            download_path = st.text_input(
-                "📁 Lokasi Penyimpanan (contoh: D:\\Downloads atau C:\\Users\\YourName\\Downloads)",
-                value="D:\\downloads",
-                help="Masukkan path folder secara manual"
-            )
-        
-        with col2:
-            st.write("")
-            st.write("")
-            if st.button("✓ Gunakan Folder Ini", use_container_width=True):
-                import os
-                if os.path.exists(download_path):
-                    st.session_state.download_folder = download_path
-                    st.success(f"✅ Folder dipilih: {download_path}")
-                else:
-                    st.error(f"❌ Folder tidak ditemukan: {download_path}")
-        
-        # Gunakan folder yang dipilih atau default
-        final_download_path = st.session_state.get("download_folder", download_path)
-        
+               
         if st.button("⬇️ Download Semua File PDF", use_container_width=True, type="primary"):
             import os
             from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -540,9 +517,10 @@ else:
                 except Exception as e:
                     return False, str(e)
             
-            try:
-                os.makedirs(final_download_path, exist_ok=True)
-            except Exception as e:
+            import tempfile
+
+            temp_dir = tempfile.TemporaryDirectory()
+            final_download_path = temp_dir.name
                 st.error(f"❌ Gagal membuat folder: {str(e)}")
                 st.stop()
             
@@ -635,6 +613,9 @@ else:
             
             if success_count > 0:
                 st.success(f"✅ {success_count} file berhasil diunduh!")
+                import io
+                import zipfile
+                
                 zip_buffer = io.BytesIO()
 
                 with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -657,7 +638,7 @@ else:
                     mime="application/zip",
                     use_container_width=True
                 )
-            
+                temp_dir.cleanup()
             if failed_count > 0:
                 st.warning(f"⚠️ {failed_count} file gagal diunduh!")
                 if st.button("⬇️ Download Semua File PDF", use_container_width=True, type="primary"):
