@@ -4,6 +4,9 @@ WebMon Downloader - Login + Filter + Detail
 
 import streamlit as st
 import requests
+import zipfile
+import tempfile
+import io
 import jwt
 import pandas as pd
 from typing import Optional, Dict, Any, List
@@ -632,6 +635,28 @@ else:
             
             if success_count > 0:
                 st.success(f"✅ {success_count} file berhasil diunduh!")
+                zip_buffer = io.BytesIO()
+
+                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+                
+                    for root, dirs, files in os.walk(final_download_path):
+                
+                        for file in files:
+                
+                            filepath = os.path.join(root, file)
+                
+                            arcname = os.path.relpath(filepath, final_download_path)
+                
+                            zipf.write(filepath, arcname)
+                
+                zip_buffer.seek(0)
+                st.download_button(
+                    "📦 Download ZIP",
+                    data=zip_buffer,
+                    file_name="WebMon_Sertifikat.zip",
+                    mime="application/zip",
+                    use_container_width=True
+                )
             
             if failed_count > 0:
                 st.warning(f"⚠️ {failed_count} file gagal diunduh!")
