@@ -465,7 +465,7 @@ else:
         
                 if links:
                     docs_with_links.append({
-                        "no_aju": doc.get("nkt"),
+                        "nkt": doc.get("nkt"),
                         "nama_pemohon": doc.get("nama_pemohon"),
                         "links": links
                     })
@@ -495,7 +495,7 @@ else:
         st.subheader("📄 Daftar File PDF")
         
         for doc_info in docs_with_links:
-            with st.expander(f"📋 {doc_info['no_aju']} - {doc_info['nama_pemohon'][:40]}"):
+            with st.expander(f"📋 {doc_info['nkt']} - {doc_info['nama_pemohon'][:40]}"):
                 for link_info in doc_info["links"]:
                     st.write(f"📄 **{link_info['judul']}** ({link_info['kode']})")
                     st.write(f"🔗 Link tersedia")
@@ -568,7 +568,7 @@ else:
                         "link": link,
                         "filepath": filepath,
                         "judul": judul,
-                        "no_aju": no_aju
+                        "nkt": nkt
                     })
             
             # Download dengan parallel (5 thread sekaligus)
@@ -675,7 +675,7 @@ else:
                     
                     # Download semua file dari semua dokumen
                     for doc_info in docs_with_links:
-                        no_aju = doc_info["no_aju"]
+                        nkt = doc_info["nkt"]
                         nama_pemohon = doc_info["nama_pemohon"]
                         
                         # Buat folder per No. Aju
