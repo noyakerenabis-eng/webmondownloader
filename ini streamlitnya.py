@@ -465,7 +465,7 @@ else:
         
                 if links:
                     docs_with_links.append({
-                        "no_aju": doc.get("no_aju"),
+                        "no_aju": doc.get("nkt"),
                         "nama_pemohon": doc.get("nama_pemohon"),
                         "links": links
                     })
@@ -548,8 +548,8 @@ else:
             download_tasks = []
             
             for doc_info in docs_with_links:
-                no_aju = doc_info["no_aju"]
-                folder_aju = os.path.join(final_download_path, no_aju)
+                nkt = doc_info["nkt"]
+                folder_aju = os.path.join(final_download_path, nkt)
                 try:
                     os.makedirs(folder_aju, exist_ok=True)
                 except:
